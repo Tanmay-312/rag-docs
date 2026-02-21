@@ -37,7 +37,7 @@ func (g *GeminiClient) Close() {
 func (g *GeminiClient) SanitizePII(ctx context.Context, text string) (string, error) {
 	model := g.Client.GenerativeModel("gemini-1.5-flash")
 	model.SetTemperature(0)
-	
+
 	prompt := fmt.Sprintf(`You are a PII sanitization agent. Your job is to redact any Personally Identifiable Information (PII) from the following text, including emails, phone numbers, and API keys. 
 Replace them with [REDACTED EMAIL], [REDACTED PHONE], or [REDACTED KEY]. 
 Do NOT change any other text, just return the exact same text with the PII redacted. 

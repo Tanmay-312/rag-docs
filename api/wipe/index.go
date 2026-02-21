@@ -1,12 +1,11 @@
-package wipe
+package handler
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"pdf-ai-assistant/lib"
+	"pdf-ai-assistant/api/lib"
 )
 
 type WipeRequest struct {

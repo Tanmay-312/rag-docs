@@ -1,14 +1,14 @@
-package chat
+package handler
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"pdf-ai-assistant/api/lib"
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
-	"pdf-ai-assistant/lib"
 )
 
 type ChatRequest struct {
@@ -102,7 +102,7 @@ Question:
 	w.Header().Set("Connection", "keep-alive")
 
 	iter := model.GenerateContentStream(ctx, genai.Text(prompt))
-	
+
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
@@ -117,7 +117,7 @@ Question:
 	for {
 		resp, err := iter.Next()
 		if err != nil {
-			break 
+			break
 		}
 
 		if len(resp.Candidates) > 0 {

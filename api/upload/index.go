@@ -1,4 +1,4 @@
-package upload
+package handler
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"pdf-ai-assistant/api/lib"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
-	"pdf-ai-assistant/lib"
 )
 
 type WorkerResult struct {

@@ -56,10 +56,10 @@ func (c *UpstashClient) UpsertValues(ctx context.Context, vectors []VectorData) 
 }
 
 type QueryRequest struct {
-	Vector       []float32              `json:"vector"`
-	TopK         int                    `json:"topK"`
-	IncludeMeta  bool                   `json:"includeMetadata"`
-	Filter       string                 `json:"filter,omitempty"`
+	Vector      []float32 `json:"vector"`
+	TopK        int       `json:"topK"`
+	IncludeMeta bool      `json:"includeMetadata"`
+	Filter      string    `json:"filter,omitempty"`
 }
 
 type QueryResponse struct {
