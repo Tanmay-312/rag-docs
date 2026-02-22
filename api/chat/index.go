@@ -92,7 +92,7 @@ Context:
 Question:
 %s`, strings.Join(contextChunks, "\n\n"), req.Message)
 
-	model := gemini.Client.GenerativeModel("gemini-1.5-flash")
+	model := gemini.Client.GenerativeModel("gemini-1.5-flash-latest")
 	model.SetTemperature(0.2) // lower temp for grounded RAG
 
 	// 4. Stream response via Server-Sent Events style (Next.js AI SDK format or raw text)
