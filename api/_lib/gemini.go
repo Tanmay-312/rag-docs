@@ -19,7 +19,8 @@ func NewGeminiClient(ctx context.Context) (*GeminiClient, error) {
 		return nil, fmt.Errorf("GEMINI_API_KEY environment variable not set")
 	}
 
-	// Use the stable v1 endpoint for 2026 production stability
+	// FORCE STABLE V1: Most 404s are caused by the SDK defaulting to v1beta
+	// which no longer supports retired model names.
 	client, err := genai.NewClient(ctx,
 		option.WithAPIKey(apiKey),
 		option.WithEndpoint("https://generativelanguage.googleapis.com/v1"),
@@ -37,15 +38,15 @@ func (g *GeminiClient) Close() {
 	}
 }
 
-// SanitizePII uses Gemini 2.5 Flash (the 2026 stable successor to 1.5)
+// SanitizePII uses the 2026 stable workhorse: Gemini 2.0 Flash
 func (g *GeminiClient) SanitizePII(ctx context.Context, text string) (string, error) {
-	// gemini-2.5-flash is the current stable replacement for 1.5 flash
-	model := g.Client.GenerativeModel("gemini-2.5-flash")
+	// gemini-2.0-flash is the 2026 successor for all "flash" tasks.
+	model := g.Client.GenerativeModel("gemini-2.0-flash")
 	model.SetTemperature(0)
 
 	prompt := fmt.Sprintf(`You are a PII sanitization agent. Redact Personally Identifiable Information (PII) 
 from the text (emails, phone numbers, API keys). Replace with [REDACTED EMAIL], [REDACTED PHONE], or [REDACTED KEY]. 
-Return only the sanitized text.
+Return ONLY the sanitized text with no conversational filler.
 
 Text to sanitize:
 %s`, text)
@@ -64,11 +65,11 @@ Text to sanitize:
 	return text, nil
 }
 
-// GenerateEmbedding uses gemini-embedding-001 (Stable 2026 replacement)
+// GenerateEmbedding uses the modern unified text-embedding-004 on the stable v1 endpoint
 func (g *GeminiClient) GenerateEmbedding(ctx context.Context, text string) ([]float32, error) {
-	// gemini-embedding-001 replaces text-embedding-004.
-	// NOTE: This model uses 3072 dimensions by default.
-	em := g.Client.EmbeddingModel("gemini-embedding-001")
+	// text-embedding-004 is supported on v1.
+	// Ensure you aren't using older IDs like 'embedding-001' or 'models/embedding'
+	em := g.Client.EmbeddingModel("text-embedding-004")
 	res, err := em.EmbedContent(ctx, genai.Text(text))
 	if err != nil {
 		return nil, fmt.Errorf("embedding failed: %w", err)
