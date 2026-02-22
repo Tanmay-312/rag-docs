@@ -19,9 +19,13 @@ func NewGeminiClient(ctx context.Context) (*GeminiClient, error) {
 		return nil, fmt.Errorf("GEMINI_API_KEY environment variable not set")
 	}
 
-	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+	// Use the stable v1 endpoint for 2026 production stability
+	client, err := genai.NewClient(ctx,
+		option.WithAPIKey(apiKey),
+		option.WithEndpoint("https://generativelanguage.googleapis.com/v1"),
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create GenAI client: %w", err)
 	}
 
 	return &GeminiClient{Client: client}, nil
@@ -33,26 +37,26 @@ func (g *GeminiClient) Close() {
 	}
 }
 
-// SanitizePII uses Gemini 1.5 Flash to redact PII
+// SanitizePII uses Gemini 2.5 Flash (the 2026 stable successor to 1.5)
 func (g *GeminiClient) SanitizePII(ctx context.Context, text string) (string, error) {
-	model := g.Client.GenerativeModel("gemini-flash-latest")
+	// gemini-2.5-flash is the current stable replacement for 1.5 flash
+	model := g.Client.GenerativeModel("gemini-2.5-flash")
 	model.SetTemperature(0)
 
-	prompt := fmt.Sprintf(`You are a PII sanitization agent. Your job is to redact any Personally Identifiable Information (PII) from the following text, including emails, phone numbers, and API keys. 
-Replace them with [REDACTED EMAIL], [REDACTED PHONE], or [REDACTED KEY]. 
-Do NOT change any other text, just return the exact same text with the PII redacted. 
-Text to sanitize:
+	prompt := fmt.Sprintf(`You are a PII sanitization agent. Redact Personally Identifiable Information (PII) 
+from the text (emails, phone numbers, API keys). Replace with [REDACTED EMAIL], [REDACTED PHONE], or [REDACTED KEY]. 
+Return only the sanitized text.
 
+Text to sanitize:
 %s`, text)
 
 	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("sanitization failed: %w", err)
 	}
 
 	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
-		part := resp.Candidates[0].Content.Parts[0]
-		if txt, ok := part.(genai.Text); ok {
+		if txt, ok := resp.Candidates[0].Content.Parts[0].(genai.Text); ok {
 			return string(txt), nil
 		}
 	}
@@ -60,12 +64,14 @@ Text to sanitize:
 	return text, nil
 }
 
-// GenerateEmbedding generates an embedding for a text chunk
+// GenerateEmbedding uses gemini-embedding-001 (Stable 2026 replacement)
 func (g *GeminiClient) GenerateEmbedding(ctx context.Context, text string) ([]float32, error) {
-	em := g.Client.EmbeddingModel("text-embedding-004")
+	// gemini-embedding-001 replaces text-embedding-004.
+	// NOTE: This model uses 3072 dimensions by default.
+	em := g.Client.EmbeddingModel("gemini-embedding-001")
 	res, err := em.EmbedContent(ctx, genai.Text(text))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("embedding failed: %w", err)
 	}
 
 	if len(res.Embedding.Values) > 0 {
