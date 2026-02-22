@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"pdf-ai-assistant/api/lib"
+	lib "pdf-ai-assistant/api/_lib"
 	"sync"
 	"time"
 

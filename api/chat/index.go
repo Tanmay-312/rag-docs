@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"pdf-ai-assistant/api/lib"
+	lib "pdf-ai-assistant/api/_lib"
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
