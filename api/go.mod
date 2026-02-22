@@ -1,4 +1,4 @@
-module pdf-ai-assistant
+module pdf-ai-assistant/api
 
 go 1.25.0
 

@@ -1,4 +1,5 @@
 {
+  "framework": "nextjs",
   "functions": {
     "api/**/*.go": {
       "maxDuration": 60
